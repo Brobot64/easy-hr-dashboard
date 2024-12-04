@@ -1,0 +1,44 @@
+:: Create main directories
+mkdir src
+mkdir src\models
+mkdir src\controllers
+mkdir src\middleware
+mkdir src\routes
+mkdir src\config
+
+:: Create files in models
+type nul > src\models\User.js
+type nul > src\models\Employee.js
+
+:: Create files in controllers
+type nul > src\controllers\authController.js
+type nul > src\controllers\employeeController.js
+type nul > src\controllers\analyticsController.js
+
+:: Create files in middleware
+type nul > src\middleware\authMiddleware.js
+
+:: Create files in routes
+type nul > src\routes\authRoutes.js
+type nul > src\routes\employeeRoutes.js
+type nul > src\routes\analyticsRoutes.js
+
+:: Create files in config
+type nul > src\config\db.js
+
+:: Create main server file
+type nul > src\server.js
+
+:: Create .env file
+type nul > .env
+
+:: Create package.json
+type nul > package.json
+
+:: Optional: Initialize npm project
+call npm init -y
+
+:: Optional: Install initial dependencies
+call npm install express mongoose jsonwebtoken bcryptjs cors dotenv
+
+echo Project structure created successfully!
