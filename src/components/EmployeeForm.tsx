@@ -29,36 +29,64 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
   const { toast } = useToast();
   const form = useForm({
     defaultValues: initialData || {
-      firstName: "",
-      lastName: "",
+      name: "",
       email: "",
+      password: "",
       department: "",
-      position: "",
-      salary: "",
       role: "employee",
+      joiningDate: "",
+      salary: "",
     },
   });
 
   const onSubmit = async (data: any) => {
     try {
-      if (initialData) {
-        await updateEmployee(initialData.id, data);
-        toast({
-          title: "Success",
-          description: "Employee updated successfully",
-        });
-      } else {
-        await createEmployee(data);
-        toast({
-          title: "Success",
-          description: "Employee created successfully",
-        });
+      const userResponse = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: "SecurePass123!",
+          role: data.role,
+          department: data.department,
+        }),
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to create user");
       }
+
+      const employeeResponse = await fetch("http://localhost:5000/api/employees", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          department: data.department,
+          role: data.position,
+          joiningDate: new Date().toISOString().split("T")[0],
+          salary: data.salary,
+        }),
+      });
+
+      if (!employeeResponse.ok) {
+        throw new Error("Failed to create employee");
+      }
+
+      toast({
+        title: "Success",
+        description: "Employee created successfully",
+      });
       onSuccess();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "An error occurred",
+        description: error.message || "An error occurred",
         variant: "destructive",
       });
     }
@@ -69,23 +97,10 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="firstName"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel>Name</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -101,6 +116,19 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,6 +203,19 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="joiningDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Joining Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

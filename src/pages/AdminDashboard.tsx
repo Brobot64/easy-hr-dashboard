@@ -155,21 +155,23 @@ const AdminDashboard = () => {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-2">Name</th>
+                      <th className="text-left py-2">Email</th>
                       <th className="text-left py-2">Department</th>
-                      <th className="text-left py-2">Position</th>
+                      <th className="text-left py-2">Role</th>
                       <th className="text-left py-2">Salary</th>
-                      <th className="text-left py-2">Join Date</th>
+                      <th className="text-left py-2">Joining Date</th>
                       <th className="text-left py-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {employees.map((employee: any) => (
-                      <tr key={employee.id} className="border-b">
-                        <td className="py-2">{`${employee.firstName} ${employee.lastName}`}</td>
+                      <tr key={employee._id} className="border-b">
+                        <td className="py-2">{employee.name}</td>
+                        <td className="py-2">{employee.email}</td>
                         <td className="py-2">{employee.department}</td>
-                        <td className="py-2">{employee.position}</td>
+                        <td className="py-2">{employee.role}</td>
                         <td className="py-2">${employee.salary.toLocaleString()}</td>
-                        <td className="py-2">{format(new Date(employee.joinDate), 'MMM dd, yyyy')}</td>
+                        <td className="py-2">{format(new Date(employee.joiningDate), 'MMM dd, yyyy')}</td>
                         <td className="py-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -187,7 +189,7 @@ const AdminDashboard = () => {
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDeleteEmployee(employee.id)}
+                                onClick={() => handleDeleteEmployee(employee._id)}
                                 className="text-red-600"
                               >
                                 Delete
