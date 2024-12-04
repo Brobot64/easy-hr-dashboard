@@ -70,14 +70,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success('Successfully logged out!');
   };
 
+  // Check for existing session on mount and route changes
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      
+      if (storedUser && token) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        
+        // Redirect to appropriate dashboard if on login page
+        if (window.location.pathname === '/') {
+          navigate(parsedUser.role === 'admin' ? '/admin' : '/employee');
+        }
+      } else if (window.location.pathname !== '/') {
+        // Redirect to login if no auth and not already on login page
+        navigate('/');
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
