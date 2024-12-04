@@ -7,10 +7,12 @@ interface DepartmentChartProps {
 
 const DepartmentChart = ({ departmentHeadcount }: DepartmentChartProps) => {
   const CustomTooltip = ({ active, payload, label }: any) => {
+    // console.log("active: ",active,"payload: ", payload,"labels: ", label);
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-2 border border-gray-200 rounded shadow">
-          <p className="font-semibold">{`Department: ${label}`}</p>
+          <p className="font-semibold">{`Department: ${payload[0].payload._id || label}`}</p>
+          {/* <p className="font-semibold">{`Department: ${label}`}</p> */}
           <p>{`Employees: ${payload[0].value}`}</p>
         </div>
       );
@@ -34,7 +36,7 @@ const DepartmentChart = ({ departmentHeadcount }: DepartmentChartProps) => {
               height={70}
               interval={0}
             />
-            <YAxis />
+            <YAxis/>
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="count" fill="#8B5CF6" name="Employees" />
           </BarChart>

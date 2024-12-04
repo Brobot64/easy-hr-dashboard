@@ -42,7 +42,7 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
   const onSubmit = async (data: any) => {
     try {
       if (initialData) {
-        const employeeResponse = await fetch(`http://localhost:5000/api/employees/${initialData._id}`, {
+        const employeeResponse = await fetch(`https://easy-hr-backend.onrender.com/api/employees/${initialData._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -67,7 +67,7 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
         });
         onSuccess();
       } else {
-        const userResponse = await fetch("http://localhost:5000/api/users", {
+        const userResponse = await fetch("https://easy-hr-backend.onrender.com/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -85,7 +85,7 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
           throw new Error("Failed to create user");
         }
 
-        const employeeResponse = await fetch("http://localhost:5000/api/employees", {
+        const employeeResponse = await fetch("https://easy-hr-backend.onrender.com/api/employees", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

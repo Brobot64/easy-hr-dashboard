@@ -57,7 +57,7 @@ src/
 ```
 
 ## Backend Integration
-The application integrates with a REST API hosted at http://localhost:5000
+The application integrates with a REST API hosted at https://easy-hr-backend.onrender.com
 
 ## Contributing
 1. Fork the repository
