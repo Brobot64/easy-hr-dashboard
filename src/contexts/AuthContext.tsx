@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('https://easy-hr-backend.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { token, role } = await response.json();
       
-      // Create a mock user object with the role from the response
       const mockUser: User = {
         id: 1,
         email,
@@ -49,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastName: role === 'admin' ? 'User' : 'Doe'
       };
 
-      // Store both token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(mockUser));
       

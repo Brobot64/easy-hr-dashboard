@@ -1,69 +1,70 @@
-# Welcome to your Lovable project
+# HR Management System
 
-## Project info
+## Overview
+This HR Management System is a comprehensive web application developed as a solution to an interview coding test, reviewed by Brobot64. The system provides a robust platform for managing employee data, handling administrative tasks, and visualizing organizational analytics.
 
-**URL**: https://lovable.dev/projects/6f1cd5b2-c794-4cb1-8928-5c4dba62f28d
+## Features
+- **Role-based Authentication**: Secure login system with separate interfaces for administrators and employees
+- **Admin Dashboard**:
+  - Employee management (CRUD operations)
+  - Department-wise analytics
+  - Employee statistics and charts
+- **Employee Dashboard**:
+  - Personal profile management
+  - View department information
+  - Access to relevant documents
 
-## How can I edit this code?
+## Technology Stack
+- Frontend: React + TypeScript + Vite
+- UI Components: shadcn/ui
+- Styling: Tailwind CSS
+- State Management: React Query
+- Charts: Recharts
+- Backend Integration: REST API
 
-There are several ways of editing your application.
+## Installation and Setup
 
-**Use Lovable**
+1. **Clone the Repository**
+```bash
+git clone <repository-url>
+cd hr-management-system
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6f1cd5b2-c794-4cb1-8928-5c4dba62f28d) and start prompting.
+2. **Install Dependencies**
+```bash
+npm install
+```
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. **Start Development Server**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. **Access the Application**
+- Open your browser and navigate to `http://localhost:5173`
+- Default login credentials:
+  - Admin: admin@example.com / admin123
+  - Employee: employee@example.com / employee123
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
+```
+src/
+├── components/     # Reusable UI components
+├── contexts/       # React contexts including auth
+├── pages/         # Main page components
+├── services/      # API integration services
+└── utils/         # Utility functions
+```
 
-**Use GitHub Codespaces**
+## Backend Integration
+The application integrates with a REST API hosted at https://easy-hr-backend.onrender.com
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6f1cd5b2-c794-4cb1-8928-5c4dba62f28d) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
