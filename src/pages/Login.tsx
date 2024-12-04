@@ -1,48 +1,28 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { login } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const { setUser } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await login(email, password);
-      localStorage.setItem("token", response.token);
-      setUser({
-        id: response.user.id,
-        email: response.user.email,
-        role: response.user.role,
-      });
-
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-
-      // Redirect based on role
-      if (response.user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/employee");
-      }
+      await login(email, password);
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: error.response?.data?.message || "An error occurred",
+        description: error.message || "An error occurred during login",
         variant: "destructive",
       });
     } finally {
