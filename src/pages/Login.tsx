@@ -13,6 +13,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  // @ts-ignore
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,10 +23,15 @@ const Login = () => {
     try {
       const response = await login(email, password);
       localStorage.setItem("token", response.token);
-      setUser({
-        id: response.user.id,
-        email: response.user.email,
-        role: response.user.role,
+      // setUser({
+      //   id: response.user.id,
+      //   email: response.user.email,
+      //   role: response.user.role,
+      // });
+
+      setUser ({
+        id: response.token, 
+        role: response.role,
       });
 
       toast({
@@ -45,6 +51,8 @@ const Login = () => {
         description: error.response?.data?.message || "An error occurred",
         variant: "destructive",
       });
+
+      console.log(error?.message);
     } finally {
       setIsLoading(false);
     }
