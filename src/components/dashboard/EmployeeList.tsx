@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { MoreVertical } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ interface EmployeeListProps {
 const EmployeeList = ({ employees, onDeleteEmployee, onEmployeeFormSuccess }: EmployeeListProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
   return (
     <Card className="w-full">

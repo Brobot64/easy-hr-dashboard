@@ -15,7 +15,7 @@ const AnalyticsCards = ({ totalEmployees, departmentCount }: AnalyticsCardsProps
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalEmployees?.total || 0}</div>
+          <div className="text-2xl font-bold">{totalEmployees || 0}</div>
         </CardContent>
       </Card>
       <Card>
