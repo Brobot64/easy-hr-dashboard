@@ -12,7 +12,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: 'admin' | 'employee') => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -23,9 +23,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  const login = (email: string, password: string, role: 'admin' | 'employee') => {
-    // Mock authentication
-    if (email && password) {
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const { token, role } = await response.json();
+      
+      // Create a mock user object with the role from the response
       const mockUser: User = {
         id: 1,
         email,
@@ -33,15 +48,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         firstName: role === 'admin' ? 'Admin' : 'John',
         lastName: role === 'admin' ? 'User' : 'Doe'
       };
-      setUser(mockUser);
+
+      // Store both token and user data
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(mockUser));
+      
+      setUser(mockUser);
       toast.success('Successfully logged in!');
       navigate(role === 'admin' ? '/admin' : '/employee');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed');
+      throw error;
     }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/');
     toast.success('Successfully logged out!');
@@ -49,7 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = localStorage.getItem('token');
+    
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
