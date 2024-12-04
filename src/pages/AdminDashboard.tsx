@@ -1,77 +1,64 @@
 import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useForm } from "react-hook-form";
-import { UserPlus, Users, Building2, LogOut, MoreVertical, Edit2, Trash2 } from 'lucide-react';
-import employeeData from '../data/employees.json';
+import { useToast } from "@/hooks/use-toast";
+import { UserPlus, Users, Building2, LogOut, MoreVertical } from 'lucide-react';
+import { getAllEmployees, deleteEmployee, getDepartmentHeadcount, getTotalEmployees } from '@/services/api';
+import EmployeeForm from '@/components/EmployeeForm';
 import { format } from 'date-fns';
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
-  const [employees, setEmployees] = useState(employeeData.employees);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const form = useForm({
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      department: '',
-      position: '',
-      salary: '',
-      joinDate: '',
-    },
+  // Fetch employees data
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees'],
+    queryFn: getAllEmployees,
   });
 
-  const editForm = useForm();
+  // Fetch analytics data
+  const { data: totalEmployees } = useQuery({
+    queryKey: ['totalEmployees'],
+    queryFn: getTotalEmployees,
+  });
 
-  // Calculate department statistics
-  const departmentStats = employees.reduce((acc, curr) => {
-    acc[curr.department] = (acc[curr.department] || 0) + 1;
-    return acc;
-  }, {});
+  const { data: departmentHeadcount } = useQuery({
+    queryKey: ['departmentHeadcount'],
+    queryFn: getDepartmentHeadcount,
+  });
 
-  const chartData = Object.entries(departmentStats).map(([department, count]) => ({
-    department,
-    count,
-  }));
-
-  const handleAddEmployee = (data) => {
-    const newEmployee = {
-      id: employees.length + 1,
-      ...data,
-      status: 'Active',
-    };
-    setEmployees([...employees, newEmployee]);
-    form.reset();
+  const handleDeleteEmployee = async (employeeId: string) => {
+    try {
+      await deleteEmployee(employeeId);
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast({
+        title: "Success",
+        description: "Employee deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditEmployee = (data) => {
-    const updatedEmployees = employees.map((emp) =>
-      emp.id === selectedEmployee.id ? { ...emp, ...data } : emp
-    );
-    setEmployees(updatedEmployees);
+  const handleEmployeeFormSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['employees'] });
+    setIsAddModalOpen(false);
     setIsEditModalOpen(false);
     setSelectedEmployee(null);
-  };
-
-  const handleDeleteEmployee = (employeeId) => {
-    const updatedEmployees = employees.filter((emp) => emp.id !== employeeId);
-    setEmployees(updatedEmployees);
-  };
-
-  const openEditModal = (employee) => {
-    setSelectedEmployee(employee);
-    editForm.reset(employee);
-    setIsEditModalOpen(true);
   };
 
   return (
@@ -100,7 +87,7 @@ const AdminDashboard = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{employees.length}</div>
+              <div className="text-2xl font-bold">{totalEmployees?.total || 0}</div>
             </CardContent>
           </Card>
           <Card>
@@ -109,7 +96,7 @@ const AdminDashboard = () => {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{Object.keys(departmentStats).length}</div>
+              <div className="text-2xl font-bold">{Object.keys(departmentHeadcount || {}).length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -130,7 +117,7 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
+                <BarChart data={departmentHeadcount}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="department" />
                   <YAxis />
@@ -144,7 +131,7 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Employee List</CardTitle>
-              <Dialog>
+              <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <UserPlus className="mr-2 h-4 w-4" />
@@ -155,113 +142,10 @@ const AdminDashboard = () => {
                   <DialogHeader>
                     <DialogTitle>Add New Employee</DialogTitle>
                   </DialogHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleAddEmployee)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="department"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Department</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {employeeData.departments.map((dept) => (
-                                  <SelectItem key={dept} value={dept}>
-                                    {dept}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Position</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="salary"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Salary</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="joinDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Join Date</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit">Add Employee</Button>
-                    </form>
-                  </Form>
+                  <EmployeeForm
+                    onSuccess={handleEmployeeFormSuccess}
+                    onCancel={() => setIsAddModalOpen(false)}
+                  />
                 </DialogContent>
               </Dialog>
             </CardHeader>
@@ -279,7 +163,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {employees.map((employee) => (
+                    {employees.map((employee: any) => (
                       <tr key={employee.id} className="border-b">
                         <td className="py-2">{`${employee.firstName} ${employee.lastName}`}</td>
                         <td className="py-2">{employee.department}</td>
@@ -294,12 +178,18 @@ const AdminDashboard = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditModal(employee)}>
-                                <Edit2 className="mr-2 h-4 w-4" />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedEmployee(employee);
+                                  setIsEditModalOpen(true);
+                                }}
+                              >
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteEmployee(employee.id)}
+                                className="text-red-600"
+                              >
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -320,113 +210,14 @@ const AdminDashboard = () => {
           <DialogHeader>
             <DialogTitle>Edit Employee</DialogTitle>
           </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(handleEditEmployee)} className="space-y-4">
-              <FormField
-                control={editForm.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {employeeData.departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="salary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Salary</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="joinDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Join Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">Save Changes</Button>
-            </form>
-          </Form>
+          <EmployeeForm
+            initialData={selectedEmployee}
+            onSuccess={handleEmployeeFormSuccess}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              setSelectedEmployee(null);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
