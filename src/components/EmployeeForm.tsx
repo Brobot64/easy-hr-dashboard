@@ -41,48 +41,75 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }: EmployeeFormProps) =
 
   const onSubmit = async (data: any) => {
     try {
-      const userResponse = await fetch("https://easy-hr-backend.onrender.com/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: "SecurePass123!",
-          role: data.role,
-          department: data.department,
-        }),
-      });
+      if (initialData) {
+        const employeeResponse = await fetch(`http://localhost:5000/api/employees/${initialData._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            department: data.department,
+            role: data.role,
+            joiningDate: data.joiningDate,
+            salary: data.salary,
+          }),
+        });
 
-      if (!userResponse.ok) {
-        throw new Error("Failed to create user");
+        if (!employeeResponse.ok) {
+          throw new Error("Failed to update employee");
+        }
+
+        toast({
+          title: "Success",
+          description: "Employee updated successfully",
+        });
+        onSuccess();
+      } else {
+        const userResponse = await fetch("http://localhost:5000/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            role: data.role,
+            department: data.department,
+          }),
+        });
+
+        if (!userResponse.ok) {
+          throw new Error("Failed to create user");
+        }
+
+        const employeeResponse = await fetch("http://localhost:5000/api/employees", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            department: data.department,
+            role: data.role,
+            joiningDate: new Date().toISOString().split("T")[0],
+            salary: data.salary,
+          }),
+        });
+
+        if (!employeeResponse.ok) {
+          throw new Error("Failed to create employee");
+        }
+
+        toast({
+          title: "Success",
+          description: "Employee created successfully",
+        });
+        onSuccess();
       }
-
-      const employeeResponse = await fetch("https://easy-hr-backend.onrender.com/api/employees", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          department: data.department,
-          role: data.position,
-          joiningDate: new Date().toISOString().split("T")[0],
-          salary: data.salary,
-        }),
-      });
-
-      if (!employeeResponse.ok) {
-        throw new Error("Failed to create employee");
-      }
-
-      toast({
-        title: "Success",
-        description: "Employee created successfully",
-      });
-      onSuccess();
     } catch (error: any) {
       toast({
         title: "Error",
